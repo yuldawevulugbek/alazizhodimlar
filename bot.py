@@ -43,31 +43,29 @@ FILIALS = [
     "Mevazor"
 ]
 
+# ======== SAVOLLAR (SANA BITTA QILIB) ========
 steps = [
     "Lavozimni kiriting:",
     "Familya, ism, sharifingizni kiriting:",
-    "Tug‘ilgan yil:",
-    "Tug‘ilgan oy:",
-    "Tug‘ilgan kun:",
+    "Tug‘ilgan sana (kun.oy.yil):",
     "Otangizning familya, ism, sharifini kiriting:",
-    "Otangiz tug‘ilgan yil:",
-    "Otangiz tug‘ilgan oy:",
-    "Otangiz tug‘ilgan kun:",
+    "Otangiz tug‘ilgan sana (kun.oy.yil):",
     "Onangizning familya, ism, sharifini kiriting:",
-    "Onangiz tug‘ilgan yil:",
-    "Onangiz tug‘ilgan oy:",
-    "Onangiz tug‘ilgan kun:",
+    "Onangiz tug‘ilgan sana (kun.oy.yil):",
     "Telefon raqam (hodimniki):",
     "Telefon raqam (otasiniki):",
     "Telefon raqam (onasiniki):"
 ]
 
-
+# ======== KEYLAR ========
 keys = [
-    "lavozim", "fio",
-    "tyil", "toy", "tkun",
-    "ofio", "oyil", "ooy", "okun",
-    "mfio", "myil", "moy", "mkun",
+    "lavozim",
+    "fio",
+    "t_sana",
+    "ofio",
+    "o_sana",
+    "mfio",
+    "m_sana",
     "phone_hodim",
     "phone_ota",
     "phone_ona"
@@ -102,9 +100,9 @@ async def export_excel(message: types.Message):
 
     headers = [
         "№", "Filial", "Lavozim", "F.I.SH",
-        "Tug'ilgan yil", "Oy", "Kun",
-        "Otasi F.I.SH", "Otasi yil", "Oy", "Kun",
-        "Onasi F.I.SH", "Onasi yil", "Oy", "Kun",
+        "Tug‘ilgan sana",
+        "Otasi F.I.SH", "Otasi tug‘ilgan sana",
+        "Onasi F.I.SH", "Onasi tug‘ilgan sana",
         "Telefon (hodim)",
         "Telefon (ota)",
         "Telefon (ona)"
@@ -112,35 +110,26 @@ async def export_excel(message: types.Message):
 
     ws.append(headers)
 
-    # Header style
     for cell in ws[1]:
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-    # Data
     for i, app in enumerate(applications, 1):
         ws.append([
             i,
             app.get("filial", ""),
             app.get("lavozim", ""),
             app.get("fio", ""),
-            app.get("tyil", ""),
-            app.get("toy", ""),
-            app.get("tkun", ""),
+            app.get("t_sana", ""),
             app.get("ofio", ""),
-            app.get("oyil", ""),
-            app.get("ooy", ""),
-            app.get("okun", ""),
+            app.get("o_sana", ""),
             app.get("mfio", ""),
-            app.get("myil", ""),
-            app.get("moy", ""),
-            app.get("mkun", ""),
+            app.get("m_sana", ""),
             app.get("phone_hodim", ""),
             app.get("phone_ota", ""),
             app.get("phone_ona", "")
         ])
 
-    # Auto column width
     for col in ws.columns:
         max_length = 0
         col_letter = get_column_letter(col[0].column)
@@ -228,4 +217,3 @@ async def restart_bot(message: types.Message):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("bot:app", host="0.0.0.0", port=port)
-
