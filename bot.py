@@ -45,22 +45,23 @@ FILIALS = [
 
 steps = [
     "Lavozimni kiriting:",
-    "F.I.SH:",
+    "Familya, ism, sharifingizni kiriting:",
     "Tug‘ilgan yil:",
     "Tug‘ilgan oy:",
     "Tug‘ilgan kun:",
-    "Otasi F.I.SH:",
-    "Otasi tug‘ilgan yil:",
-    "Otasi tug‘ilgan oy:",
-    "Otasi tug‘ilgan kun:",
-    "Onasi F.I.SH:",
-    "Onasi tug‘ilgan yil:",
-    "Onasi tug‘ilgan oy:",
-    "Onasi tug‘ilgan kun:",
+    "Otangizning familya, ism, sharifini kiriting:",
+    "Otangiz tug‘ilgan yil:",
+    "Otangiz tug‘ilgan oy:",
+    "Otangiz tug‘ilgan kun:",
+    "Onangizning familya, ism, sharifini kiriting:",
+    "Onangiz tug‘ilgan yil:",
+    "Onangiz tug‘ilgan oy:",
+    "Onangiz tug‘ilgan kun:",
     "Telefon raqam (hodimniki):",
     "Telefon raqam (otasiniki):",
     "Telefon raqam (onasiniki):"
 ]
+
 
 keys = [
     "lavozim", "fio",
