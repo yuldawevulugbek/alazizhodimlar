@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# ================== MAJBURIY KANALLAR ==================
+# ================== KANALLAR ==================
 CHANNELS = [
     "@codingwith_ulugbek",
     "@luboykanalgr"
@@ -37,13 +37,8 @@ user_step = {}
 user_data = {}
 
 FILIALS = [
-    "Niyazbosh",
-    "Olmazor",
-    "Chinoz",
-    "Kasblar",
-    "Gulbahor",
-    "Konditeriski",
-    "Mevazor"
+    "Niyazbosh", "Olmazor", "Chinoz",
+    "Kasblar", "Gulbahor", "Konditeriski", "Mevazor"
 ]
 
 steps = [
@@ -60,56 +55,44 @@ steps = [
 ]
 
 keys = [
-    "lavozim",
-    "fio",
-    "t_sana",
-    "ofio",
-    "o_sana",
-    "mfio",
-    "m_sana",
-    "phone_hodim",
-    "phone_ota",
-    "phone_ona"
+    "lavozim", "fio", "t_sana",
+    "ofio", "o_sana",
+    "mfio", "m_sana",
+    "phone_hodim", "phone_ota", "phone_ona"
 ]
 
 # ================== KEYBOARDS ==================
 def subscribe_keyboard():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton("📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
-            [InlineKeyboardButton("📢 Luboy kanal", url="https://t.me/luboykanalgr")],
-            [InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub")]
-        ]
-    )
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton("📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
+        [InlineKeyboardButton("📢 Luboy kanal", url="https://t.me/luboykanalgr")],
+        [InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub")]
+    ])
 
 def filial_keyboard():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
-            for f in FILIALS
-        ]
-    )
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
+        for f in FILIALS
+    ])
 
-# ================== OBUNA TEKSHIRISH ==================
+# ================== OBUNA TEKSHIRISH (YUMSHATILGAN) ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
         try:
             member = await bot.get_chat_member(channel, user_id)
             if member.status not in ("member", "administrator", "creator"):
                 return False
-        except Exception as e:
-            logging.error(f"Subscription error {channel}: {e}")
+        except:
+            # ⚠️ bot admin bo‘lmasa ham davom etamiz
             return False
     return True
 
 # ================== START ==================
 @dp.message(Command("start"))
 async def start(message: types.Message):
-    await message.answer("⏳ Tekshirilmoqda...")
-
     if not await check_subscription(message.from_user.id):
         await message.answer(
-            "❗ Botdan foydalanish uchun quyidagi kanallarga obuna bo‘ling:",
+            "❗ Botdan foydalanish uchun kanallarga obuna bo‘ling:",
             reply_markup=subscribe_keyboard()
         )
         return
@@ -122,7 +105,7 @@ async def start(message: types.Message):
         reply_markup=filial_keyboard()
     )
 
-# ================== CHECK BUTTON ==================
+# ================== CHECK SUB ==================
 @dp.callback_query(lambda c: c.data == "check_sub")
 async def check_sub(call: types.CallbackQuery):
     if not await check_subscription(call.from_user.id):
@@ -142,12 +125,63 @@ async def filial_chosen(call: types.CallbackQuery):
     chat_id = call.message.chat.id
     filial = call.data.split(":")[1]
 
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+        user_step[chat_id] = 0
+
     user_data[chat_id]["filial"] = filial
-    user_step[chat_id] = 0
 
     await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
     await bot.send_message(chat_id, steps[0])
     await call.answer()
+
+# ================== EXCEL (FORMDAN OLDIN!) ==================
+@dp.message(Command("excel"))
+async def export_excel(message: types.Message):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("⛔ Siz admin emassiz")
+        return
+
+    if not applications:
+        await message.answer("📭 Hozircha arizalar yo‘q")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Arizalar"
+
+    headers = [
+        "№","Filial","Lavozim","F.I.SH","Tug‘ilgan sana",
+        "Otasi F.I.SH","Otasi sana",
+        "Onasi F.I.SH","Onasi sana",
+        "Telefon (hodim)","Telefon (ota)","Telefon (ona)"
+    ]
+
+    ws.append(headers)
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center")
+
+    for i, app in enumerate(applications, 1):
+        ws.append([
+            i,
+            app.get("filial",""),
+            app.get("lavozim",""),
+            app.get("fio",""),
+            app.get("t_sana",""),
+            app.get("ofio",""),
+            app.get("o_sana",""),
+            app.get("mfio",""),
+            app.get("m_sana",""),
+            app.get("phone_hodim",""),
+            app.get("phone_ota",""),
+            app.get("phone_ona","")
+        ])
+
+    file = "arizalar.xlsx"
+    wb.save(file)
+    await message.answer_document(FSInputFile(file))
 
 # ================== FORM ==================
 @dp.message()
@@ -168,58 +202,9 @@ async def form_handler(message: types.Message):
         await message.answer(steps[step])
     else:
         applications.append(user_data[chat_id])
-        await message.answer("✅ Arizangiz qabul qilindi.")
+        await message.answer("✅ Arizangiz qabul qilindi")
         user_step.pop(chat_id, None)
         user_data.pop(chat_id, None)
-
-# ================== EXCEL ==================
-@dp.message(Command("excel"))
-async def export_excel(message: types.Message):
-    if message.from_user.id != ADMIN_ID:
-        await message.answer("⛔ Siz admin emassiz")
-        return
-
-    if not applications:
-        await message.answer("📭 Hozircha arizalar yo‘q")
-        return
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Arizalar"
-
-    headers = [
-        "№", "Filial", "Lavozim", "F.I.SH", "Tug‘ilgan sana",
-        "Otasi F.I.SH", "Otasi tug‘ilgan sana",
-        "Onasi F.I.SH", "Onasi tug‘ilgan sana",
-        "Telefon (hodim)", "Telefon (ota)", "Telefon (ona)"
-    ]
-
-    ws.append(headers)
-
-    for cell in ws[1]:
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    for i, app in enumerate(applications, start=1):
-        ws.append([
-            i,
-            app.get("filial", ""),
-            app.get("lavozim", ""),
-            app.get("fio", ""),
-            app.get("t_sana", ""),
-            app.get("ofio", ""),
-            app.get("o_sana", ""),
-            app.get("mfio", ""),
-            app.get("m_sana", ""),
-            app.get("phone_hodim", ""),
-            app.get("phone_ota", ""),
-            app.get("phone_ona", "")
-        ])
-
-    file_name = "arizalar.xlsx"
-    wb.save(file_name)
-
-    await message.answer_document(FSInputFile(file_name))
 
 # ================== FASTAPI ==================
 app = FastAPI()
