@@ -45,10 +45,10 @@ steps = [
     "Lavozimni kiriting:",
     "Familya, ism, sharifingizni kiriting:",
     "Tug‘ilgan sana (kun.oy.yil):",
-    "Otangizning F.I.SH:",
-    "Otangiz tug‘ilgan sana:",
-    "Onangizning F.I.SH:",
-    "Onangiz tug‘ilgan sana:",
+    "Otangizning familya, ism, sharifi",
+    "Otangiz tug‘ilgan sana (kun.oy.yil):",
+    "Onangizning familya, ism, sharifi:",
+    "Onangiz tug‘ilgan sana (kun.oy.yil):",
     "Telefon raqam (hodim):",
     "Telefon raqam (ota):",
     "Telefon raqam (ona):"
@@ -242,3 +242,4 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000))
     )
+
