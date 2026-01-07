@@ -14,10 +14,10 @@ from openpyxl.styles import Alignment, Font
 
 # ================== ENV ==================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
 if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN topilmadi")
+    raise RuntimeError("❌ BOT_TOKEN topilmadi")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -76,24 +76,9 @@ keys = [
 def subscribe_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="📢 Coding with Ulugbek",
-                    url="https://t.me/codingwith_ulugbek"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="📢 Luboy kanal",
-                    url="https://t.me/luboykanalgr"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="✅ Tekshirish",
-                    callback_data="check_sub"
-                )
-            ]
+            [InlineKeyboardButton("📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
+            [InlineKeyboardButton("📢 Luboy kanal", url="https://t.me/luboykanalgr")],
+            [InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub")]
         ]
     )
 
@@ -105,7 +90,7 @@ def filial_keyboard():
         ]
     )
 
-# ================== SUBSCRIPTION CHECK ==================
+# ================== OBUNA TEKSHIRISH ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
         try:
@@ -113,15 +98,14 @@ async def check_subscription(user_id: int) -> bool:
             if member.status not in ("member", "administrator", "creator"):
                 return False
         except Exception as e:
-            logging.error(f"Subscription check error ({channel}): {e}")
+            logging.error(f"Subscription error {channel}: {e}")
             return False
     return True
 
 # ================== START ==================
 @dp.message(Command("start"))
 async def start(message: types.Message):
-    # darhol javob (sekindek tuyulmasligi uchun)
-    await message.answer("⏳ Tekshirilmoqda, iltimos kuting...")
+    await message.answer("⏳ Tekshirilmoqda...")
 
     if not await check_subscription(message.from_user.id):
         await message.answer(
@@ -142,10 +126,7 @@ async def start(message: types.Message):
 @dp.callback_query(lambda c: c.data == "check_sub")
 async def check_sub(call: types.CallbackQuery):
     if not await check_subscription(call.from_user.id):
-        await call.answer(
-            "❌ Hali barcha kanallarga obuna bo‘lmadingiz",
-            show_alert=True
-        )
+        await call.answer("❌ Hali obuna to‘liq emas", show_alert=True)
         return
 
     user_step[call.message.chat.id] = 0
@@ -191,6 +172,55 @@ async def form_handler(message: types.Message):
         user_step.pop(chat_id, None)
         user_data.pop(chat_id, None)
 
+# ================== EXCEL ==================
+@dp.message(Command("excel"))
+async def export_excel(message: types.Message):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("⛔ Siz admin emassiz")
+        return
+
+    if not applications:
+        await message.answer("📭 Hozircha arizalar yo‘q")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Arizalar"
+
+    headers = [
+        "№", "Filial", "Lavozim", "F.I.SH", "Tug‘ilgan sana",
+        "Otasi F.I.SH", "Otasi tug‘ilgan sana",
+        "Onasi F.I.SH", "Onasi tug‘ilgan sana",
+        "Telefon (hodim)", "Telefon (ota)", "Telefon (ona)"
+    ]
+
+    ws.append(headers)
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for i, app in enumerate(applications, start=1):
+        ws.append([
+            i,
+            app.get("filial", ""),
+            app.get("lavozim", ""),
+            app.get("fio", ""),
+            app.get("t_sana", ""),
+            app.get("ofio", ""),
+            app.get("o_sana", ""),
+            app.get("mfio", ""),
+            app.get("m_sana", ""),
+            app.get("phone_hodim", ""),
+            app.get("phone_ota", ""),
+            app.get("phone_ona", "")
+        ])
+
+    file_name = "arizalar.xlsx"
+    wb.save(file_name)
+
+    await message.answer_document(FSInputFile(file_name))
+
 # ================== FASTAPI ==================
 app = FastAPI()
 
@@ -209,4 +239,3 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000))
     )
-
