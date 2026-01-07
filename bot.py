@@ -68,13 +68,13 @@ def subscribe_keyboard():
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="📢 Coding with Ulugbek",
+                    text="📢 HrdirectorAAA",
                     url="https://t.me/hrdirectorAAA"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="📢 Luboy kanal",
+                    text="📢 AlAziz-Academy",
                     url="https://t.me/alaziz_academy"
                 )
             ],
@@ -243,6 +243,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000))
     )
+
 
 
 
