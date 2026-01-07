@@ -17,7 +17,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
 if not BOT_TOKEN:
-    raise RuntimeError("❌ BOT_TOKEN topilmadi")
+    raise RuntimeError("BOT_TOKEN topilmadi")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -63,19 +63,38 @@ keys = [
 
 # ================== KEYBOARDS ==================
 def subscribe_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton("📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
-        [InlineKeyboardButton("📢 Luboy kanal", url="https://t.me/luboykanalgr")],
-        [InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub")]
-    ])
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📢 Coding with Ulugbek",
+                    url="https://t.me/codingwith_ulugbek"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📢 Luboy kanal",
+                    url="https://t.me/luboykanalgr"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="✅ Tekshirish",
+                    callback_data="check_sub"
+                )
+            ]
+        ]
+    )
 
 def filial_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
-        for f in FILIALS
-    ])
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
+            for f in FILIALS
+        ]
+    )
 
-# ================== OBUNA TEKSHIRISH (YUMSHATILGAN) ==================
+# ================== OBUNA TEKSHIRISH ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
         try:
@@ -83,7 +102,6 @@ async def check_subscription(user_id: int) -> bool:
             if member.status not in ("member", "administrator", "creator"):
                 return False
         except:
-            # ⚠️ bot admin bo‘lmasa ham davom etamiz
             return False
     return True
 
@@ -135,7 +153,7 @@ async def filial_chosen(call: types.CallbackQuery):
     await bot.send_message(chat_id, steps[0])
     await call.answer()
 
-# ================== EXCEL (FORMDAN OLDIN!) ==================
+# ================== EXCEL ==================
 @dp.message(Command("excel"))
 async def export_excel(message: types.Message):
     if message.from_user.id != ADMIN_ID:
