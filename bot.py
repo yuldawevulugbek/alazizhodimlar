@@ -37,8 +37,9 @@ user_step = {}
 user_data = {}
 
 FILIALS = [
-    "Niyazbosh", "Olmazor", "Chinoz",
-    "Kasblar", "Gulbahor", "Konditeriski", "Mevazor"
+    "Niyozbosh", "Kids 1", "Kasblar",
+    "Kids 2", "Xalqabod", "Gulbahor", "Olmazor",
+    "Chinoz","Mevazor","Paxtazor","Dostobod","Pitiletka"
 ]
 
 steps = [
@@ -68,13 +69,13 @@ def subscribe_keyboard():
             [
                 InlineKeyboardButton(
                     text="📢 Coding with Ulugbek",
-                    url="https://t.me/codingwith_ulugbek"
+                    url="https://t.me/hrdirectorAAA"
                 )
             ],
             [
                 InlineKeyboardButton(
                     text="📢 Luboy kanal",
-                    url="https://t.me/luboykanalgr"
+                    url="https://t.me/alaziz_academy"
                 )
             ],
             [
@@ -242,4 +243,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000))
     )
+
 
