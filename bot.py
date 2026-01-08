@@ -25,12 +25,6 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# ================== CHANNELS ==================
-CHANNELS = [
-    "@codingwith_ulugbek",
-    "@luboykanalgr"
-]
-
 # ================== DATA ==================
 applications = []
 user_step = {}
@@ -39,6 +33,11 @@ user_data = {}
 FILIALS = [
     "Niyazbosh", "Olmazor", "Chinoz",
     "Kasblar", "Gulbahor", "Konditeriski", "Mevazor"
+]
+
+CHANNELS = [
+    "@codingwith_ulugbek",
+    "@luboykanalgr"
 ]
 
 # ================== QUESTIONS ==================
@@ -81,13 +80,6 @@ keys = [
 ]
 
 # ================== KEYBOARDS ==================
-def subscribe_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
-        [InlineKeyboardButton(text="📢 Luboy kanal", url="https://t.me/luboykanalgr")],
-        [InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_sub")]
-    ])
-
 def filial_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
@@ -109,83 +101,23 @@ async def check_subscription(user_id: int) -> bool:
 @dp.message(Command("start"))
 async def start(message: types.Message):
     if not await check_subscription(message.from_user.id):
-        await message.answer(
-            "❗ Botdan foydalanish uchun kanallarga obuna bo‘ling:",
-            reply_markup=subscribe_keyboard()
-        )
+        await message.answer("❗ Avval kanallarga obuna bo‘ling")
         return
 
-    user_data[message.chat.id] = {}
     user_step[message.chat.id] = 0
+    user_data[message.chat.id] = {}
     await message.answer(steps[0])
 
-# ================== USER ID (ADMIN TEKSHIRISH) ==================
+# ================== ADMIN ID ==================
 @dp.message(Command("id"))
 async def my_id(message: types.Message):
     await message.answer(f"🆔 Sizning ID: {message.from_user.id}")
 
-# ================== CHECK SUB ==================
-@dp.callback_query(lambda c: c.data == "check_sub")
-async def check_sub(call: types.CallbackQuery):
-    if not await check_subscription(call.from_user.id):
-        await call.answer("❌ Hali obuna to‘liq emas", show_alert=True)
-        return
-
-    user_data[call.message.chat.id] = {}
-    user_step[call.message.chat.id] = 0
-    await call.message.edit_text("Obuna tasdiqlandi ✅\n\n" + steps[0])
-    await call.answer()
-
-# ================== FILIAL ==================
-@dp.callback_query(lambda c: c.data.startswith("filial:"))
-async def filial_chosen(call: types.CallbackQuery):
-    chat_id = call.message.chat.id
-    filial = call.data.split(":")[1]
-
-    user_data[chat_id]["filial"] = filial
-    await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
-    await bot.send_message(chat_id, steps[user_step[chat_id]])
-    await call.answer()
-
-# ================== FORM ==================
-@dp.message()
-async def form_handler(message: types.Message):
-    if message.text.startswith("/"):
-        return
-
-    chat_id = message.chat.id
-    if chat_id not in user_step:
-        return
-
-    step = user_step[chat_id]
-    user_data[chat_id][keys[step]] = message.text
-    step += 1
-
-    # F.I.Sh dan keyin FILIAL
-    if step == 1 and "filial" not in user_data[chat_id]:
-        user_step[chat_id] = step
-        await message.answer("Filialni tanlang:", reply_markup=filial_keyboard())
-        return
-
-    if step < len(steps):
-        user_step[chat_id] = step
-        await message.answer(steps[step])
-    else:
-        applications.append(user_data[chat_id])
-        await message.answer("✅ Arizangiz qabul qilindi")
-
-        user_step.pop(chat_id, None)
-        user_data.pop(chat_id, None)
-
-# ================== EXCEL ==================
+# ================== ⭐ EXCEL (ENG MUHIM JOY) ==================
 @dp.message(Command("excel"))
 async def export_excel(message: types.Message):
     if message.from_user.id != ADMIN_ID:
-        await message.answer(
-            f"⛔ Siz admin emassiz\n"
-            f"Sizning ID: {message.from_user.id}\n"
-            f"Admin ID: {ADMIN_ID}"
-        )
+        await message.answer("⛔ Siz admin emassiz")
         return
 
     if not applications:
@@ -227,17 +159,44 @@ async def export_excel(message: types.Message):
     wb.save(file)
     await message.answer_document(FSInputFile(file))
 
+# ================== FORM ==================
+@dp.message()
+async def form_handler(message: types.Message):
+    if message.text.startswith("/"):
+        return
+
+    chat_id = message.chat.id
+    if chat_id not in user_step:
+        return
+
+    step = user_step[chat_id]
+    user_data[chat_id][keys[step]] = message.text
+    step += 1
+
+    if step == 1 and "filial" not in user_data[chat_id]:
+        user_step[chat_id] = step
+        await message.answer("Filialni tanlang:", reply_markup=filial_keyboard())
+        return
+
+    if step < len(steps):
+        user_step[chat_id] = step
+        await message.answer(steps[step])
+    else:
+        applications.append(user_data[chat_id])
+        await message.answer("✅ Arizangiz qabul qilindi")
+        user_step.pop(chat_id, None)
+        user_data.pop(chat_id, None)
+
 # ================== FASTAPI ==================
 app = FastAPI()
-
-@app.get("/")
-async def root():
-    return {"status": "bot is running"}
 
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(dp.start_polling(bot))
 
-# ================== RUN ==================
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
