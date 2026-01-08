@@ -36,8 +36,8 @@ FILIALS = [
 ]
 
 CHANNELS = [
-    "@codingwith_ulugbek",
-    "@luboykanalgr"
+    "@alaziz_academy",
+    "@hrdirectorAAA"
 ]
 
 # ================== QUESTIONS ==================
@@ -212,3 +212,4 @@ async def root():
 
 if __name__ == "__main__":
     uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+
