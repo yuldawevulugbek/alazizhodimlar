@@ -37,33 +37,32 @@ FILIALS = [
 ]
 
 steps = [
-    "Lavozimni kiriting:",                                 # 1
-    "Familya, ism, sharifingizni kiriting:",               # 3
-    "Tug‘ilgan sana (kun.oy.yil):",                         # 4
-    "Telefon raqamingiz:",                                 # 5
+    "Familya, ism, sharifingizni kiriting:",   # 1
+    "Lavozimni kiriting:",                     # 2
+    "Tug‘ilgan sana (kun.oy.yil):",             # 3
+    "Telefon raqamingiz:",                     # 4
 
-    "Otangiz familya, ism, sharifi:",                      # 6
-    "Otangiz tug‘ilgan sana (kun.oy.yil):",                # 7
-    "Otangiz telefon raqami:",                             # 8
+    "Otangiz familya, ism, sharifi:",          # 5
+    "Otangiz tug‘ilgan sana (kun.oy.yil):",    # 6
+    "Otangiz telefon raqami:",                 # 7
 
-    "Onangiz familya, ism, sharifi:",                      # 9
-    "Onangiz tug‘ilgan sana (kun.oy.yil):",                # 10
-    "Onangiz telefon raqami:",                             # 11
+    "Onangiz familya, ism, sharifi:",          # 8
+    "Onangiz tug‘ilgan sana (kun.oy.yil):",    # 9
+    "Onangiz telefon raqami:",                 # 10
 
-    "Turmush o‘rtog‘ingiz familya, ism, sharifi:",         # 12
-    "Turmush o‘rtog‘ingiz tug‘ilgan sana (kun.oy.yil):",   # 13
-    "Turmush o‘rtog‘ingiz telefon raqami:",                # 14
+    "Turmush o‘rtog‘ingiz familya, ism, sharifi:",
+    "Turmush o‘rtog‘ingiz tug‘ilgan sana (kun.oy.yil):",
+    "Turmush o‘rtog‘ingiz telefon raqami:",
 
-    "1-farzand familya, ism, sharifi:",                    # 15
-    "1-farzand tug‘ilgan sana (kun.oy.yil):",              # 16
+    "1-farzand familya, ism, sharifi:",
+    "1-farzand tug‘ilgan sana (kun.oy.yil):",
 
-    "2-farzand familya, ism, sharifi:",                    # 18
-    "2-farzand tug‘ilgan sana (kun.oy.yil):",              # 19
+    "2-farzand familya, ism, sharifi:",
+    "2-farzand tug‘ilgan sana (kun.oy.yil):",
 
-    "3-farzand familya, ism, sharifi:",                    # 20
-    "3-farzand tug‘ilgan sana (kun.oy.yil):"               # 21
+    "3-farzand familya, ism, sharifi:",
+    "3-farzand tug‘ilgan sana (kun.oy.yil):"
 ]
-
 
 keys = [
     "lavozim",
@@ -127,10 +126,8 @@ async def start(message: types.Message):
     user_data[message.chat.id] = {}
     user_step[message.chat.id] = 0
 
-    await message.answer(
-        "2️⃣ Filialni tanlang:",
-        reply_markup=filial_keyboard()
-    )
+    # 🔥 BIRINCHI SAVOL
+    await message.answer(steps[0])
 
 @dp.callback_query(lambda c: c.data == "check_sub")
 async def check_sub(call: types.CallbackQuery):
@@ -150,10 +147,9 @@ async def filial_chosen(call: types.CallbackQuery):
     filial = call.data.split(":")[1]
 
     user_data[chat_id]["filial"] = filial
-    user_step[chat_id] = 0
 
     await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
-    await bot.send_message(chat_id, steps[0])
+    await bot.send_message(chat_id, steps[user_step[chat_id]])
     await call.answer()
 
 @dp.message(Command("excel"))
@@ -232,8 +228,18 @@ async def form_handler(message: types.Message):
         return
 
     step = user_step[chat_id]
+
     user_data[chat_id][keys[step]] = message.text
     step += 1
+
+    # 🔥 F.I.Sh dan keyin filial chiqaramiz
+    if step == 1 and "filial" not in user_data[chat_id]:
+        user_step[chat_id] = step
+        await message.answer(
+            "Filialni tanlang:",
+            reply_markup=filial_keyboard()
+        )
+        return
 
     if step < len(steps):
         user_step[chat_id] = step
@@ -259,4 +265,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000))
     )
+
 
