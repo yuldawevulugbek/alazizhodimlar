@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# ================== KANALLAR ==================
+# ================== CHANNELS ==================
 CHANNELS = [
     "@alaziz_academy",
     "@hrdirectorAAA"
@@ -37,55 +37,75 @@ user_step = {}
 user_data = {}
 
 FILIALS = [
-    "Niyozbosh", "Kids 1", "Kasblar",
-    "Kids 2", "Xalqabod", "Gulbahor", "Olmazor",
-    "Chinoz","Mevazor","Paxtazor","Dostobod","Pitiletka"
+    "Niyozbosh", "Kids 1", "Kasblar", "Kids 2",
+    "Xalqabod", "Gulbahor", "Olmazor", "Chinoz",
+    "Mevazor", "Paxtazor", "Dostobod", "Pitiletka"
 ]
 
+# ================== QUESTIONS ==================
 steps = [
-    "Lavozimni kiriting:",
-    "Familya, ism, sharifingizni kiriting:",
-    "Tug‘ilgan sana (kun.oy.yil):",
-    "Otangizning familya, ism, sharifi",
-    "Otangiz tug‘ilgan sana (kun.oy.yil):",
-    "Onangizning familya, ism, sharifi:",
-    "Onangiz tug‘ilgan sana (kun.oy.yil):",
-    "Telefon raqam (hodim):",
-    "Telefon raqam (ota):",
-    "Telefon raqam (ona):"
+    "1️⃣ Lavozimni kiriting:",
+    "3️⃣ Familya, ism, sharifingizni kiriting:",
+    "4️⃣ Tug‘ilgan sana (kun.oy.yil):",
+    "5️⃣ Telefon raqamingiz:",
+
+    "6️⃣ Otangiz familya, ism, sharifi:",
+    "7️⃣ Otangiz tug‘ilgan sana (kun.oy.yil):",
+    "8️⃣ Otangiz telefon raqami:",
+
+    "9️⃣ Onangiz familya, ism, sharifi:",
+    "🔟 Onangiz tug‘ilgan sana (kun.oy.yil):",
+    "1️⃣1️⃣ Onangiz telefon raqami:",
+
+    "1️⃣2️⃣ Turmush o‘rtog‘ingiz familya, ism, sharifi:",
+    "1️⃣3️⃣ Turmush o‘rtog‘ingiz tug‘ilgan sana (kun.oy.yil):",
+    "1️⃣4️⃣ Turmush o‘rtog‘ingiz telefon raqami:",
+
+    "1️⃣5️⃣ 1-farzand familya, ism, sharifi:",
+    "1️⃣6️⃣ 1-farzand tug‘ilgan sana (kun.oy.yil):",
+
+    "1️⃣8️⃣ 2-farzand familya, ism, sharifi:",
+    "1️⃣9️⃣ 2-farzand tug‘ilgan sana (kun.oy.yil):",
+
+    "2️⃣0️⃣ 3-farzand familya, ism, sharifi:",
+    "2️⃣1️⃣ 3-farzand tug‘ilgan sana (kun.oy.yil):"
 ]
 
 keys = [
-    "lavozim", "fio", "t_sana",
-    "ofio", "o_sana",
-    "mfio", "m_sana",
-    "phone_hodim", "phone_ota", "phone_ona"
+    "lavozim",
+    "fio",
+    "t_sana",
+    "phone_hodim",
+
+    "ofio",
+    "o_sana",
+    "phone_ota",
+
+    "mfio",
+    "m_sana",
+    "phone_ona",
+
+    "sfio",
+    "s_sana",
+    "phone_spouse",
+
+    "child1_fio",
+    "child1_sana",
+
+    "child2_fio",
+    "child2_sana",
+
+    "child3_fio",
+    "child3_sana"
 ]
 
 # ================== KEYBOARDS ==================
 def subscribe_keyboard():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="📢 HrdirectorAAA",
-                    url="https://t.me/hrdirectorAAA"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="📢 AlAziz-Academy",
-                    url="https://t.me/alaziz_academy"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="✅ Tekshirish",
-                    callback_data="check_sub"
-                )
-            ]
-        ]
-    )
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📢 HrdirectorAAA", url="https://t.me/hrdirectorAAA")],
+        [InlineKeyboardButton(text="📢 AlAziz Academy", url="https://t.me/alaziz_academy")],
+        [InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_sub")]
+    ])
 
 def filial_keyboard():
     return InlineKeyboardMarkup(
@@ -95,7 +115,7 @@ def filial_keyboard():
         ]
     )
 
-# ================== OBUNA TEKSHIRISH ==================
+# ================== SUB CHECK ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
         try:
@@ -116,11 +136,11 @@ async def start(message: types.Message):
         )
         return
 
-    user_step[message.chat.id] = 0
     user_data[message.chat.id] = {}
+    user_step[message.chat.id] = 0
 
     await message.answer(
-        "✅ Obuna tasdiqlandi\n\nFilialni tanlang:",
+        "2️⃣ Filialni tanlang:",
         reply_markup=filial_keyboard()
     )
 
@@ -131,10 +151,10 @@ async def check_sub(call: types.CallbackQuery):
         await call.answer("❌ Hali obuna to‘liq emas", show_alert=True)
         return
 
-    user_step[call.message.chat.id] = 0
     user_data[call.message.chat.id] = {}
+    user_step[call.message.chat.id] = 0
 
-    await call.message.edit_text("✅ Obuna tasdiqlandi\n\nFilialni tanlang:")
+    await call.message.edit_text("2️⃣ Filialni tanlang:")
     await call.message.edit_reply_markup(reply_markup=filial_keyboard())
     await call.answer()
 
@@ -144,63 +164,12 @@ async def filial_chosen(call: types.CallbackQuery):
     chat_id = call.message.chat.id
     filial = call.data.split(":")[1]
 
-    if chat_id not in user_data:
-        user_data[chat_id] = {}
-        user_step[chat_id] = 0
-
     user_data[chat_id]["filial"] = filial
+    user_step[chat_id] = 0
 
     await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
     await bot.send_message(chat_id, steps[0])
     await call.answer()
-
-# ================== EXCEL ==================
-@dp.message(Command("excel"))
-async def export_excel(message: types.Message):
-    if message.from_user.id != ADMIN_ID:
-        await message.answer("⛔ Siz admin emassiz")
-        return
-
-    if not applications:
-        await message.answer("📭 Hozircha arizalar yo‘q")
-        return
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Arizalar"
-
-    headers = [
-        "№","Filial","Lavozim","F.I.SH","Tug‘ilgan sana",
-        "Otasi F.I.SH","Otasi sana",
-        "Onasi F.I.SH","Onasi sana",
-        "Telefon (hodim)","Telefon (ota)","Telefon (ona)"
-    ]
-
-    ws.append(headers)
-
-    for cell in ws[1]:
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal="center")
-
-    for i, app in enumerate(applications, 1):
-        ws.append([
-            i,
-            app.get("filial",""),
-            app.get("lavozim",""),
-            app.get("fio",""),
-            app.get("t_sana",""),
-            app.get("ofio",""),
-            app.get("o_sana",""),
-            app.get("mfio",""),
-            app.get("m_sana",""),
-            app.get("phone_hodim",""),
-            app.get("phone_ota",""),
-            app.get("phone_ona","")
-        ])
-
-    file = "arizalar.xlsx"
-    wb.save(file)
-    await message.answer_document(FSInputFile(file))
 
 # ================== FORM ==================
 @dp.message()
@@ -222,28 +191,62 @@ async def form_handler(message: types.Message):
     else:
         applications.append(user_data[chat_id])
         await message.answer("✅ Arizangiz qabul qilindi")
-        user_step.pop(chat_id, None)
-        user_data.pop(chat_id, None)
+        user_step.pop(chat_id)
+        user_data.pop(chat_id)
+
+# ================== EXCEL ==================
+@dp.message(Command("excel"))
+async def export_excel(message: types.Message):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("⛔ Siz admin emassiz")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Arizalar"
+
+    headers = [
+        "№","Filial","Lavozim","F.I.SH","Tug‘ilgan sana","Telefon",
+        "Otasi F.I.SH","Otasi sana","Otasi telefon",
+        "Onasi F.I.SH","Onasi sana","Onasi telefon",
+        "Turmush o‘rtog‘i F.I.SH","Turmush o‘rtog‘i sana","Turmush o‘rtog‘i telefon",
+        "1-farzand F.I.SH","1-farzand sana",
+        "2-farzand F.I.SH","2-farzand sana",
+        "3-farzand F.I.SH","3-farzand sana"
+    ]
+
+    ws.append(headers)
+    for c in ws[1]:
+        c.font = Font(bold=True)
+        c.alignment = Alignment(horizontal="center")
+
+    for i, a in enumerate(applications, 1):
+        ws.append([
+            i, a.get("filial"), a.get("lavozim"),
+            a.get("fio"), a.get("t_sana"), a.get("phone_hodim"),
+            a.get("ofio"), a.get("o_sana"), a.get("phone_ota"),
+            a.get("mfio"), a.get("m_sana"), a.get("phone_ona"),
+            a.get("sfio"), a.get("s_sana"), a.get("phone_spouse"),
+            a.get("child1_fio"), a.get("child1_sana"),
+            a.get("child2_fio"), a.get("child2_sana"),
+            a.get("child3_fio"), a.get("child3_sana")
+        ])
+
+    file = "arizalar.xlsx"
+    wb.save(file)
+    await message.answer_document(FSInputFile(file))
 
 # ================== FASTAPI ==================
 app = FastAPI()
-
-@app.get("/")
-async def root():
-    return {"status": "bot is running"}
 
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(dp.start_polling(bot))
 
+@app.get("/")
+async def root():
+    return {"status": "bot is running"}
+
 # ================== RUN ==================
 if __name__ == "__main__":
-    uvicorn.run(
-        "bot:app",
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000))
-    )
-
-
-
-
+    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
