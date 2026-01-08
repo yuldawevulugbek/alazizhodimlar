@@ -43,18 +43,18 @@ FILIALS = [
 
 # ================== STEPS ==================
 steps = [
-    "Familya, ism, sharifingizni kiriting:",   # 0
-    "Lavozimni kiriting:",                     # 1
-    "Tug‘ilgan sana (kun.oy.yil):",            # 2
-    "Telefon raqamingiz:",                    # 3
+    "Familya, ism, sharifingizni kiriting:",
+    "Lavozimni kiriting:",
+    "Tug‘ilgan sana (kun.oy.yil):",
+    "Telefon raqamingiz:",
 
-    "Otangiz familya, ism, sharifi:",         # 4
-    "Otangiz tug‘ilgan sana (kun.oy.yil):",   # 5
-    "Otangiz telefon raqami:",                # 6
+    "Otangiz familya, ism, sharifi:",
+    "Otangiz tug‘ilgan sana (kun.oy.yil):",
+    "Otangiz telefon raqami:",
 
-    "Onangiz familya, ism, sharifi:",         # 7
-    "Onangiz tug‘ilgan sana (kun.oy.yil):",   # 8
-    "Onangiz telefon raqami:",                # 9
+    "Onangiz familya, ism, sharifi:",
+    "Onangiz tug‘ilgan sana (kun.oy.yil):",
+    "Onangiz telefon raqami:",
 
     "Turmush o‘rtog‘ingiz familya, ism, sharifi:",
     "Turmush o‘rtog‘ingiz tug‘ilgan sana (kun.oy.yil):",
@@ -117,7 +117,6 @@ async def start(message: types.Message):
 
     user_data[message.chat.id] = {}
     user_step[message.chat.id] = 0
-
     await message.answer(steps[0])
 
 # ================== CHECK SUB ==================
@@ -129,7 +128,6 @@ async def check_sub(call: types.CallbackQuery):
 
     user_data[call.message.chat.id] = {}
     user_step[call.message.chat.id] = 0
-
     await call.message.edit_text("Obuna tasdiqlandi ✅\n\n" + steps[0])
     await call.answer()
 
@@ -140,7 +138,6 @@ async def filial_chosen(call: types.CallbackQuery):
     filial = call.data.split(":")[1]
 
     user_data[chat_id]["filial"] = filial
-
     await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
     await bot.send_message(chat_id, steps[user_step[chat_id]])
     await call.answer()
@@ -171,8 +168,9 @@ async def form_handler(message: types.Message):
     else:
         applications.append(user_data[chat_id])
         await message.answer("✅ Arizangiz qabul qilindi")
-        user_step.pop(chat_id)
-        user_data.pop(chat_id)
+
+        user_step.pop(chat_id, None)
+        user_data.pop(chat_id, None)
 
 # ================== EXCEL ==================
 @dp.message(Command("excel"))
