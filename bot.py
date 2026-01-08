@@ -113,7 +113,19 @@ async def start(message: types.Message):
 async def my_id(message: types.Message):
     await message.answer(f"🆔 Sizning ID: {message.from_user.id}")
 
-# ================== ⭐ EXCEL (ENG MUHIM JOY) ==================
+# ================== FILIAL CALLBACK (MUHIM) ==================
+@dp.callback_query(lambda c: c.data.startswith("filial:"))
+async def filial_chosen(call: types.CallbackQuery):
+    chat_id = call.message.chat.id
+    filial = call.data.split(":")[1]
+
+    user_data[chat_id]["filial"] = filial
+
+    await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
+    await call.message.answer(steps[user_step[chat_id]])
+    await call.answer()
+
+# ================== EXCEL ==================
 @dp.message(Command("excel"))
 async def export_excel(message: types.Message):
     if message.from_user.id != ADMIN_ID:
