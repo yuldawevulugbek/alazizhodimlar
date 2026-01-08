@@ -12,7 +12,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFil
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
-
+# ================== ENV ==================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
@@ -21,12 +21,17 @@ if not BOT_TOKEN:
 
 logging.basicConfig(level=logging.INFO)
 
+# ================== BOT ==================
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+# ================== CHANNELS ==================
 CHANNELS = [
     "@codingwith_ulugbek",
     "@luboykanalgr"
 ]
+
+# ================== DATA ==================
 applications = []
 user_step = {}
 user_data = {}
@@ -36,19 +41,20 @@ FILIALS = [
     "Kasblar", "Gulbahor", "Konditeriski", "Mevazor"
 ]
 
+# ================== STEPS ==================
 steps = [
-    "Familya, ism, sharifingizni kiriting:",   # 1
-    "Lavozimni kiriting:",                     # 2
-    "Tug‘ilgan sana (kun.oy.yil):",             # 3
-    "Telefon raqamingiz:",                     # 4
+    "Familya, ism, sharifingizni kiriting:",   # 0
+    "Lavozimni kiriting:",                     # 1
+    "Tug‘ilgan sana (kun.oy.yil):",            # 2
+    "Telefon raqamingiz:",                    # 3
 
-    "Otangiz familya, ism, sharifi:",          # 5
-    "Otangiz tug‘ilgan sana (kun.oy.yil):",    # 6
-    "Otangiz telefon raqami:",                 # 7
+    "Otangiz familya, ism, sharifi:",         # 4
+    "Otangiz tug‘ilgan sana (kun.oy.yil):",   # 5
+    "Otangiz telefon raqami:",                # 6
 
-    "Onangiz familya, ism, sharifi:",          # 8
-    "Onangiz tug‘ilgan sana (kun.oy.yil):",    # 9
-    "Onangiz telefon raqami:",                 # 10
+    "Onangiz familya, ism, sharifi:",         # 7
+    "Onangiz tug‘ilgan sana (kun.oy.yil):",   # 8
+    "Onangiz telefon raqami:",                # 9
 
     "Turmush o‘rtog‘ingiz familya, ism, sharifi:",
     "Turmush o‘rtog‘ingiz tug‘ilgan sana (kun.oy.yil):",
@@ -65,39 +71,21 @@ steps = [
 ]
 
 keys = [
-    "lavozim",
-
-    "fio",
-    "t_sana",
-    "phone_hodim",
-
-    "ofio",
-    "o_sana",
-    "phone_ota",
-
-    "mfio",
-    "m_sana",
-    "phone_ona",
-
-    "sfio",
-    "s_sana",
-    "phone_spouse",
-
-    "child1_fio",
-    "child1_sana",
-
-    "child2_fio",
-    "child2_sana",
-
-    "child3_fio",
-    "child3_sana"
+    "fio", "lavozim", "t_sana", "phone_hodim",
+    "ofio", "o_sana", "phone_ota",
+    "mfio", "m_sana", "phone_ona",
+    "sfio", "s_sana", "phone_spouse",
+    "child1_fio", "child1_sana",
+    "child2_fio", "child2_sana",
+    "child3_fio", "child3_sana"
 ]
 
+# ================== KEYBOARDS ==================
 def subscribe_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton("📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
-        [InlineKeyboardButton("📢 Luboy kanal", url="https://t.me/luboykanalgr")],
-        [InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub")]
+        [InlineKeyboardButton(text="📢 Coding with Ulugbek", url="https://t.me/codingwith_ulugbek")],
+        [InlineKeyboardButton(text="📢 Luboy kanal", url="https://t.me/luboykanalgr")],
+        [InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_sub")]
     ])
 
 def filial_keyboard():
@@ -105,6 +93,8 @@ def filial_keyboard():
         [InlineKeyboardButton(text=f, callback_data=f"filial:{f}")]
         for f in FILIALS
     ])
+
+# ================== SUB CHECK ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
         try:
@@ -114,6 +104,8 @@ async def check_subscription(user_id: int) -> bool:
         except:
             return False
     return True
+
+# ================== START ==================
 @dp.message(Command("start"))
 async def start(message: types.Message):
     if not await check_subscription(message.from_user.id):
@@ -126,21 +118,22 @@ async def start(message: types.Message):
     user_data[message.chat.id] = {}
     user_step[message.chat.id] = 0
 
-    # 🔥 BIRINCHI SAVOL
     await message.answer(steps[0])
 
+# ================== CHECK SUB ==================
 @dp.callback_query(lambda c: c.data == "check_sub")
 async def check_sub(call: types.CallbackQuery):
     if not await check_subscription(call.from_user.id):
         await call.answer("❌ Hali obuna to‘liq emas", show_alert=True)
         return
 
-    user_step[call.message.chat.id] = 0
     user_data[call.message.chat.id] = {}
+    user_step[call.message.chat.id] = 0
 
-    await call.message.edit_text("✅ Obuna tasdiqlandi\n\nFilialni tanlang:")
-    await call.message.edit_reply_markup(reply_markup=filial_keyboard())
+    await call.message.edit_text("Obuna tasdiqlandi ✅\n\n" + steps[0])
     await call.answer()
+
+# ================== FILIAL ==================
 @dp.callback_query(lambda c: c.data.startswith("filial:"))
 async def filial_chosen(call: types.CallbackQuery):
     chat_id = call.message.chat.id
@@ -152,72 +145,7 @@ async def filial_chosen(call: types.CallbackQuery):
     await bot.send_message(chat_id, steps[user_step[chat_id]])
     await call.answer()
 
-@dp.message(Command("excel"))
-async def export_excel(message: types.Message):
-    if message.from_user.id != ADMIN_ID:
-        await message.answer("⛔ Siz admin emassiz")
-        return
-
-    if not applications:
-        await message.answer("📭 Hozircha arizalar yo‘q")
-        return
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Arizalar"
-
-    headers = [
-    "№", "Filial", "Lavozim", "F.I.SH", "Tug‘ilgan sana", "Telefon",
-    "Otasi F.I.SH", "Otasi sana", "Otasi telefon",
-    "Onasi F.I.SH", "Onasi sana", "Onasi telefon",
-    "Turmush o‘rtog‘i F.I.SH", "Turmush o‘rtog‘i sana", "Turmush o‘rtog‘i telefon",
-    "1-farzand F.I.SH", "1-farzand sana",
-    "2-farzand F.I.SH", "2-farzand sana",
-    "3-farzand F.I.SH", "3-farzand sana"
-]
-
-
-    ws.append(headers)
-
-    for cell in ws[1]:
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal="center")
-
-    for i, app in enumerate(applications, 1):
-       ws.append([
-            i,
-            app.get("filial",""),
-            app.get("lavozim",""),
-            app.get("fio",""),
-            app.get("t_sana",""),
-            app.get("phone_hodim",""),
-
-            app.get("ofio",""),
-            app.get("o_sana",""),
-            app.get("phone_ota",""),
-
-            app.get("mfio",""),
-            app.get("m_sana",""),
-            app.get("phone_ona",""),
-
-            app.get("sfio",""),
-            app.get("s_sana",""),
-            app.get("phone_spouse",""),
-
-            app.get("child1_fio",""),
-            app.get("child1_sana",""),
-
-            app.get("child2_fio",""),
-            app.get("child2_sana",""),
-
-            app.get("child3_fio",""),
-            app.get("child3_sana","")
-        ])
-
-
-    file = "arizalar.xlsx"
-    wb.save(file)
-    await message.answer_document(FSInputFile(file))
+# ================== FORM ==================
 @dp.message()
 async def form_handler(message: types.Message):
     if message.text.startswith("/"):
@@ -228,17 +156,13 @@ async def form_handler(message: types.Message):
         return
 
     step = user_step[chat_id]
-
     user_data[chat_id][keys[step]] = message.text
     step += 1
 
-    # 🔥 F.I.Sh dan keyin filial chiqaramiz
+    # F.I.Sh dan keyin FILIAL
     if step == 1 and "filial" not in user_data[chat_id]:
         user_step[chat_id] = step
-        await message.answer(
-            "Filialni tanlang:",
-            reply_markup=filial_keyboard()
-        )
+        await message.answer("Filialni tanlang:", reply_markup=filial_keyboard())
         return
 
     if step < len(steps):
@@ -247,9 +171,56 @@ async def form_handler(message: types.Message):
     else:
         applications.append(user_data[chat_id])
         await message.answer("✅ Arizangiz qabul qilindi")
-        user_step.pop(chat_id, None)
-        user_data.pop(chat_id, None)
+        user_step.pop(chat_id)
+        user_data.pop(chat_id)
 
+# ================== EXCEL ==================
+@dp.message(Command("excel"))
+async def export_excel(message: types.Message):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("⛔ Siz admin emassiz")
+        return
+
+    if not applications:
+        await message.answer("📭 Arizalar yo‘q")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Arizalar"
+
+    headers = [
+        "№","Filial","Lavozim","F.I.SH","Tug‘ilgan sana","Telefon",
+        "Otasi F.I.SH","Otasi sana","Otasi telefon",
+        "Onasi F.I.SH","Onasi sana","Onasi telefon",
+        "Turmush o‘rtog‘i F.I.SH","Turmush o‘rtog‘i sana","Turmush o‘rtog‘i telefon",
+        "1-farzand F.I.SH","1-farzand sana",
+        "2-farzand F.I.SH","2-farzand sana",
+        "3-farzand F.I.SH","3-farzand sana"
+    ]
+
+    ws.append(headers)
+    for c in ws[1]:
+        c.font = Font(bold=True)
+        c.alignment = Alignment(horizontal="center")
+
+    for i, a in enumerate(applications, 1):
+        ws.append([
+            i, a.get("filial"), a.get("lavozim"), a.get("fio"),
+            a.get("t_sana"), a.get("phone_hodim"),
+            a.get("ofio"), a.get("o_sana"), a.get("phone_ota"),
+            a.get("mfio"), a.get("m_sana"), a.get("phone_ona"),
+            a.get("sfio"), a.get("s_sana"), a.get("phone_spouse"),
+            a.get("child1_fio"), a.get("child1_sana"),
+            a.get("child2_fio"), a.get("child2_sana"),
+            a.get("child3_fio"), a.get("child3_sana")
+        ])
+
+    file = "arizalar.xlsx"
+    wb.save(file)
+    await message.answer_document(FSInputFile(file))
+
+# ================== FASTAPI ==================
 app = FastAPI()
 
 @app.get("/")
@@ -259,11 +230,7 @@ async def root():
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(dp.start_polling(bot))
+
+# ================== RUN ==================
 if __name__ == "__main__":
-    uvicorn.run(
-        "bot:app",
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000))
-    )
-
-
+    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
