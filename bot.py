@@ -86,6 +86,13 @@ def filial_keyboard():
         for f in FILIALS
     ])
 
+def subscribe_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📢 Kanal 1", url="https://t.me/alaziz_academy")],
+        [InlineKeyboardButton(text="📢 Kanal 2", url="https://t.me/hrdirectorAAA")],
+        [InlineKeyboardButton(text="✅ Davom etish", callback_data="check_sub")]
+    ])
+
 # ================== SUB CHECK ==================
 async def check_subscription(user_id: int) -> bool:
     for channel in CHANNELS:
@@ -100,30 +107,41 @@ async def check_subscription(user_id: int) -> bool:
 # ================== START ==================
 @dp.message(Command("start"))
 async def start(message: types.Message):
-    if not await check_subscription(message.from_user.id):
-        await message.answer("❗ Avval kanallarga obuna bo‘ling")
+    await message.answer(
+        "❗ Botdan foydalanish uchun quyidagi kanallarga obuna bo‘ling:",
+        reply_markup=subscribe_keyboard()
+    )
+
+# ================== CHECK SUB CALLBACK ==================
+@dp.callback_query(lambda c: c.data == "check_sub")
+async def check_sub_callback(call: types.CallbackQuery):
+    if not await check_subscription(call.from_user.id):
+        await call.answer("❌ Avval barcha kanallarga obuna bo‘ling", show_alert=True)
         return
 
-    user_step[message.chat.id] = 0
-    user_data[message.chat.id] = {}
-    await message.answer(steps[0])
+    chat_id = call.message.chat.id
+    user_step[chat_id] = 0
+    user_data[chat_id] = {}
 
-# ================== ADMIN ID ==================
-@dp.message(Command("id"))
-async def my_id(message: types.Message):
-    await message.answer(f"🆔 Sizning ID: {message.from_user.id}")
+    await call.message.edit_text("✅ Obuna tasdiqlandi")
+    await call.message.answer(steps[0])
+    await call.answer()
 
-# ================== FILIAL CALLBACK (MUHIM) ==================
+# ================== FILIAL CALLBACK ==================
 @dp.callback_query(lambda c: c.data.startswith("filial:"))
 async def filial_chosen(call: types.CallbackQuery):
     chat_id = call.message.chat.id
     filial = call.data.split(":")[1]
 
     user_data[chat_id]["filial"] = filial
-
     await call.message.edit_text(f"✅ Tanlangan filial: {filial}")
     await call.message.answer(steps[user_step[chat_id]])
     await call.answer()
+
+# ================== ADMIN ID ==================
+@dp.message(Command("id"))
+async def my_id(message: types.Message):
+    await message.answer(f"🆔 Sizning ID: {message.from_user.id}")
 
 # ================== EXCEL ==================
 @dp.message(Command("excel"))
@@ -212,4 +230,3 @@ async def root():
 
 if __name__ == "__main__":
     uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
-
