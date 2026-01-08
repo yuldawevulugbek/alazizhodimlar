@@ -41,7 +41,7 @@ FILIALS = [
     "Kasblar", "Gulbahor", "Konditeriski", "Mevazor"
 ]
 
-# ================== STEPS ==================
+# ================== QUESTIONS ==================
 steps = [
     "Familya, ism, sharifingizni kiriting:",
     "Lavozimni kiriting:",
@@ -119,6 +119,11 @@ async def start(message: types.Message):
     user_step[message.chat.id] = 0
     await message.answer(steps[0])
 
+# ================== USER ID (ADMIN TEKSHIRISH) ==================
+@dp.message(Command("id"))
+async def my_id(message: types.Message):
+    await message.answer(f"🆔 Sizning ID: {message.from_user.id}")
+
 # ================== CHECK SUB ==================
 @dp.callback_query(lambda c: c.data == "check_sub")
 async def check_sub(call: types.CallbackQuery):
@@ -176,7 +181,11 @@ async def form_handler(message: types.Message):
 @dp.message(Command("excel"))
 async def export_excel(message: types.Message):
     if message.from_user.id != ADMIN_ID:
-        await message.answer("⛔ Siz admin emassiz")
+        await message.answer(
+            f"⛔ Siz admin emassiz\n"
+            f"Sizning ID: {message.from_user.id}\n"
+            f"Admin ID: {ADMIN_ID}"
+        )
         return
 
     if not applications:
